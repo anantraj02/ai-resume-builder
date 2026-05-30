@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 export const createResume = async (req, res) => {
   try {
-
     const {
       title,
       summary,
@@ -42,6 +41,7 @@ export const createResume = async (req, res) => {
 
 export const getMyResumes = async (req, res) => {
   try {
+    console.log("Logged In User:", req.user);
 
     const resumes = await prisma.resume.findMany({
       where: {
@@ -57,24 +57,22 @@ export const getMyResumes = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
       message: "Server Error",
     });
-
   }
 };
 
 export const getResumeById = async (req, res) => {
   try {
-
     const { id } = req.params;
 
-    const resume = await prisma.resume.findUnique({
+    const resume = await prisma.resume.findFirst({
       where: {
         id,
+        userId: req.user.id,
       },
     });
 
@@ -89,20 +87,30 @@ export const getResumeById = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
       message: "Server Error",
     });
-
   }
 };
 
 export const updateResume = async (req, res) => {
   try {
-
     const { id } = req.params;
+
+    const existingResume = await prisma.resume.findFirst({
+      where: {
+        id,
+        userId: req.user.id,
+      },
+    });
+
+    if (!existingResume) {
+      return res.status(404).json({
+        message: "Resume not found",
+      });
+    }
 
     const {
       title,
@@ -133,20 +141,30 @@ export const updateResume = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
       message: "Server Error",
     });
-
   }
 };
 
 export const deleteResume = async (req, res) => {
   try {
-
     const { id } = req.params;
+
+    const existingResume = await prisma.resume.findFirst({
+      where: {
+        id,
+        userId: req.user.id,
+      },
+    });
+
+    if (!existingResume) {
+      return res.status(404).json({
+        message: "Resume not found",
+      });
+    }
 
     await prisma.resume.delete({
       where: {
@@ -159,12 +177,10 @@ export const deleteResume = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
       message: "Server Error",
     });
-
   }
 };
