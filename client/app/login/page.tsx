@@ -9,7 +9,7 @@ export default function LoginPage() {
   const loginUser = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        "https://ai-resume-builder-w42o.onrender.com/api/auth/login",
         {
           method: "POST",
           headers: {

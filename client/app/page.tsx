@@ -260,7 +260,7 @@ else if (template === "ats") {
     setLoading(true);
 
     const response = await fetch(
-      "http://localhost:5000/api/ai/generate-resume",
+      "https://ai-resume-builder-w42o.onrender.com/api/resume/create",
       {
         method: "POST",
         headers: {
@@ -296,7 +296,7 @@ else if (template === "ats") {
   const saveResume = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/resume/create",
+         "https://ai-resume-builder-w42o.onrender.com/api/resume/create",
         {
           method: "POST",
           headers: {
@@ -332,7 +332,7 @@ else if (template === "ats") {
   try {
 
     const response = await fetch(
-      "http://localhost:5000/api/resume/my-resumes",
+      "https://ai-resume-builder-w42o.onrender.com/api/resume/my-resumes",
       {
         headers: {
           authorization: localStorage.getItem("token") || "",
@@ -356,7 +356,7 @@ else if (template === "ats") {
 const deleteResume = async (id: string) => {
   try {
     const response = await fetch(
-      `http://localhost:5000/api/resume/${id}`,
+      `https://ai-resume-builder-w42o.onrender.com/api/resume/${id}`,
       {
         method: "DELETE",
         headers: {
@@ -381,7 +381,7 @@ const deleteResume = async (id: string) => {
 const updateResume = async () => {
   try {
     const response = await fetch(
-      `http://localhost:5000/api/resume/${editingResume.id}`,
+      `https://ai-resume-builder-w42o.onrender.com/api/resume/${editingResume.id}`,
       {
         method: "PUT",
         headers: {
