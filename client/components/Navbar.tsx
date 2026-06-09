@@ -32,44 +32,26 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-600 hover:text-navy transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  size="sm"
-                >
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/"
-                  className="text-gray-600 hover:text-navy transition-colors"
-                >
-                  Home
-                </Link>
-                <Link href="/register">
-                  <Button variant="outline" size="sm">
-                    Register
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button variant="primary" size="sm">
-                    Login
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
+          <div className="hidden md:flex items-center gap-4">
+  <Link
+    href="/"
+    className="text-gray-600 hover:text-blue-600 transition-colors"
+  >
+    Home
+  </Link>
+
+  <Link href="/register">
+    <Button variant="outline" size="sm">
+      Register
+    </Button>
+  </Link>
+
+  <Link href="/login">
+    <Button variant="primary" size="sm">
+      Login
+    </Button>
+  </Link>
+</div>
 
           {/* Mobile Menu Button */}
           <button
