@@ -75,101 +75,134 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4">
-      <Card className="w-full max-w-md" padding="lg">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="text-4xl font-bold text-navy mb-2">{APP_NAME}</div>
-          <p className="text-gray-600">Create your account</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center px-6">
+
+        <div className="hidden lg:block">
+          <h1 className="text-6xl font-bold text-slate-900 leading-tight mb-6">
+            Build ATS-Optimized
+            <br />
+            Resumes
+          </h1>
+
+          <p className="text-xl text-gray-600 mb-8">
+            Create ATS-optimized resumes in minutes and increase your chances of landing interviews.
+          </p>
+
+          <div className="space-y-4 text-lg">
+            <div>🚀 ATS Score Optimization</div>
+            <div>🤖 AI Resume Generation</div>
+            <div>🎨 Professional Templates</div>
+            <div>📄 Instant PDF Export</div>
+          </div>
         </div>
 
-        {/* Form */}
-        <div className="space-y-4">
-          <Input
-            label="Full Name"
-            type="text"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyPress={handleKeyPress}
-            autoComplete="name"
-          />
+        <Card className="w-full max-w-lg p-8 shadow-2xl hover:-translate-y-1 transition-all duration-300 justify-self-center">
+          {/* Logo */}
+          <div className="text-center mb-8">
 
-          <Input
-            label="Email"
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyPress={handleKeyPress}
-            autoComplete="email"
-          />
-
-          <Input
-            label="Password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            autoComplete="new-password"
-          />
-
-          <Input
-            label="Confirm Password"
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            autoComplete="new-password"
-          />
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-              {error}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm mb-4">
+              🚀 Trusted by 10,000+ Job Seekers
             </div>
-          )}
 
-          <Button
-            onClick={registerUser}
-            variant="primary"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </Button>
-        </div>
+            <div className="text-4xl font-bold text-navy mb-2">
+              {APP_NAME}
+            </div>
 
-        {/* Divider */}
-        <div className="my-6 relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <p className="text-gray-600">
+              Create your account
+            </p>
+
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Already have an account?</span>
+
+          {/* Form */}
+          <div className="space-y-4">
+            <Input
+              label="Full Name"
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyPress={handleKeyPress}
+              autoComplete="name"
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress}
+              autoComplete="email"
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              autoComplete="new-password"
+            />
+
+            <Input
+              label="Confirm Password"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              autoComplete="new-password"
+            />
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
+            <Button
+              onClick={registerUser}
+              variant="primary"
+              size="lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </Button>
           </div>
-        </div>
 
-        {/* Login Link */}
-        <Link href="/login">
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full"
-          >
-            Sign In
-          </Button>
-        </Link>
+          {/* Divider */}
+          <div className="my-6 relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Already have an account?</span>
+            </div>
+          </div>
 
-        {/* Back to Home */}
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-sm text-blue-600 hover:text-blue-700">
-            Back to Home
+          {/* Login Link */}
+          <Link href="/login">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              Sign In
+            </Button>
           </Link>
-        </div>
-      </Card>
+
+          {/* Back to Home */}
+          <div className="mt-6 text-center">
+            <Link href="/" className="text-sm text-blue-600 hover:text-blue-700">
+              Back to Home
+            </Link>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
