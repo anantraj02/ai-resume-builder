@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        "https://ai-resume-builder-w42o.onrender.com/api/auth/signup",
+        "http://localhost:5000/api/auth/signup",
         {
           method: "POST",
           headers: {

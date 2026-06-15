@@ -22,6 +22,8 @@ export default function Dashboard() {
   const [atsScore, setAtsScore] = useState(0);
   const [atsSuggestions, setAtsSuggestions] = useState<string[]>([]);
   const [template, setTemplate] = useState("classic");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,7 +36,7 @@ export default function Dashboard() {
   const fetchResumes = async () => {
     try {
       const response = await fetch(
-        "https://ai-resume-builder-w42o.onrender.com/api/resume/my-resumes",
+        "http://localhost:5000/api/resume/my-resumes",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -42,14 +44,39 @@ export default function Dashboard() {
         }
       );
       const data = await response.json();
+
+      console.log(JSON.stringify(data.resumes, null, 2));
+
       if (response.ok) {
-        setResumes(data);
+        const resumeList = data.resumes || [];
+
+        setResumes(resumeList);
+
+        if (resumeList.length > 0) {
+          const avgATS =
+            resumeList.reduce(
+              (sum: any, resume: any) =>
+                sum + (resume.atsScore || 0),
+              0
+            ) / resumeList.length;
+
+          setAtsScore(Math.round(avgATS));
+        } else {
+          setAtsScore(0);
+        }
       }
     } catch (error) {
       console.error("Error fetching resumes:", error);
     }
   };
 
+  {
+    isEditing && (
+      <div className="mb-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+        ✏️ Editing Resume Mode
+      </div>
+    )
+  }
   const generateResume = async () => {
     if (!jobRole || !skills) {
       setMessage("Please fill in job role and skills");
@@ -61,7 +88,7 @@ export default function Dashboard() {
 
     try {
       const response = await fetch(
-        "https://ai-resume-builder-w42o.onrender.com/api/ai/generate-resume",
+        "http://localhost:5000/api/ai/generate-resume",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -90,7 +117,25 @@ export default function Dashboard() {
     }
   };
 
+  const startEditing = (resume: any) => {
+    setEditingId(resume.id);
+
+    setJobRole(resume.title);
+    setSkills(resume.skills);
+    setSummary(resume.summary);
+    setExperience(resume.experience);
+    setProjects(resume.projects);
+
+    setIsEditing(true);
+
+    window.scrollTo({
+      top: 500,
+      behavior: "smooth",
+    });
+  };
+
   const saveResume = async () => {
+    console.log("Saving ATS:", atsScore);
     if (!jobRole || !summary) {
       alert("Please generate a resume first");
       return;
@@ -98,9 +143,55 @@ export default function Dashboard() {
 
     try {
       const response = await fetch(
-        "https://ai-resume-builder-w42o.onrender.com/api/resume/create",
+        "http://localhost:5000/api/resume/create",
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            title: jobRole,
+            summary,
+            skills,
+            experience,
+            education: "",
+            projects,
+            atsScore,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      setMessage("✅ Resume Saved Successfully!");
+      setTimeout(() => {
+  setMessage("");
+}, 4000);
+
+      setJobRole("");
+      setSkills("");
+      setSummary("");
+      setExperience("");
+      setProjects("");
+      setAtsScore(0);
+      fetchResumes();
+    } catch (error) {
+      alert("Error saving resume");
+    }
+  };
+
+  const updateResume = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/resume/${editingId}`,
+        {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -123,16 +214,18 @@ export default function Dashboard() {
         return;
       }
 
-      alert("Resume saved successfully!");
-      setJobRole("");
-      setSkills("");
-      setSummary("");
-      setExperience("");
-      setProjects("");
-      setAtsScore(0);
+      setMessage("✅ Resume Updated Successfully!");
+      setTimeout(() => {
+  setMessage("");
+}, 4000);
+
+      setIsEditing(false);
+      setEditingId("");
+
       fetchResumes();
+
     } catch (error) {
-      alert("Error saving resume");
+      alert("Error updating resume");
     }
   };
 
@@ -204,7 +297,7 @@ export default function Dashboard() {
 
     try {
       const response = await fetch(
-        `https://ai-resume-builder-w42o.onrender.com/api/resume/${id}`,
+        `http://localhost:5000/api/resume/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -311,54 +404,7 @@ export default function Dashboard() {
           {/* Left Panel - Generator */}
           <div className="lg:col-span-2 space-y-6">
 
-            <Card className="mb-6">
-              <h2 className="text-xl font-bold mb-4">
-                Quick Actions
-              </h2>
-
-              <div className="flex flex-wrap gap-4">
-
-                <Button
-                  className="
-  hover:bg-blue-600
-  hover:text-white
-  hover:scale-105
-  transition-all
-  duration-300
-  hover:-translate-y-1
-  "
-                >
-                  🚀 Generate Resume
-                </Button>
-
-                <Button
-                  className="
-hover:bg-blue-600
-hover:text-white
-hover:scale-105
-transition-all
-duration-300
-hover:-translate-y-1
-"
-                >
-                  📄 My Resumes
-                </Button>
-
-                <Button
-                  className="
-hover:bg-blue-600
-hover:text-white
-hover:scale-105
-transition-all
-duration-300
-hover:-translate-y-1
-"
-                >
-                  ⬇ Download PDF
-                </Button>
-
-              </div>
-            </Card>
+            
 
             {/* Input Card */}
             <Card >
@@ -378,39 +424,89 @@ hover:-translate-y-1
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
                 />
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Template
-                  </label>
-                  <select
-                    value={template}
-                    onChange={(e) => setTemplate(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="classic">Classic</option>
-                    <option value="modern">Modern</option>
-                    <option value="ats">ATS-Friendly</option>
-                  </select>
-                </div>
-                <Button
-                  onClick={generateResume}
-                  variant="primary"
-                  size="lg"
-                  className="
-  w-full
-  shadow-lg
-  hover:shadow-xl
-  hover:scale-[1.02]
-  transition-all
-  duration-300
-  "
-                  disabled={loading}
-                >
 
-                  {loading
-                    ? "⏳ Generating Resume..."
-                    : "🚀 Generate with AI"}
-                </Button>
+                {isEditing && (
+                  <>
+                    <textarea
+                      value={summary}
+                      onChange={(e) => setSummary(e.target.value)}
+                      placeholder="Summary"
+                      className="w-full p-3 border rounded-lg min-h-[120px]"
+                    />
+
+                    <textarea
+                      value={experience}
+                      onChange={(e) => setExperience(e.target.value)}
+                      placeholder="Experience"
+                      className="w-full p-3 border rounded-lg min-h-[180px]"
+                    />
+
+                    <textarea
+                      value={projects}
+                      onChange={(e) => setProjects(e.target.value)}
+                      placeholder="Projects"
+                      className="w-full p-3 border rounded-lg min-h-[180px]"
+                    />
+                  </>
+                )}
+                {!isEditing && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Template
+                    </label>
+
+                    <select
+                      value={template}
+                      onChange={(e) => setTemplate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200"
+                    >
+                      <option value="classic">Classic</option>
+                      <option value="modern">Modern</option>
+                      <option value="ats">ATS-Friendly</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* EDIT MODE BUTTON */}
+                {isEditing && (
+                  <Button
+                    onClick={updateResume}
+                    className="
+    bg-blue-600
+    text-white
+    hover:bg-blue-700
+    hover:scale-105
+    transition-all
+    duration-300
+    px-6
+    py-3
+  "
+                  >
+                    Update Resume
+                  </Button>
+                )}
+
+                {/* GENERATE BUTTON */}
+                {!isEditing && (
+                  <Button
+                    onClick={generateResume}
+                    variant="primary"
+                    size="lg"
+                    className="
+      w-full
+      shadow-lg
+      hover:shadow-xl
+      hover:scale-[1.02]
+      transition-all
+      duration-300
+    "
+                    disabled={loading}
+                  >
+                    {loading
+                      ? "⏳ Generating Resume..."
+                      : "🚀 Generate with AI"}
+                  </Button>
+                )}
               </div>
               {message && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
@@ -484,7 +580,7 @@ hover:-translate-y-1
                       </p>
 
                     </div>
-                  
+
                   </div>
                 </div>
 
@@ -507,17 +603,35 @@ hover:-translate-y-1
 
                 {/* Actions */}
                 <div className="flex gap-4 flex-wrap">
-                  <Button
-                    onClick={saveResume}
-                    variant="primary"
-                    size="md"
-                  >
-                    Save Resume
-                  </Button>
+                  {!isEditing && (
+                    <Button
+  onClick={saveResume}
+  className="
+    bg-blue-600
+    text-white
+    hover:bg-blue-700
+    hover:scale-105
+    transition-all
+    duration-300
+    px-6
+    py-3
+  "
+>
+   Save Resume
+</Button>
+                  )}
                   <Button
                     onClick={downloadPDF}
-                    variant="secondary"
-                    size="md"
+                    className="
+    bg-blue-600
+    text-white
+    hover:bg-blue-700
+    hover:scale-105
+    transition-all
+    duration-300
+    px-6
+    py-3
+  "
                   >
                     Download PDF
                   </Button>
@@ -563,15 +677,23 @@ hover:-translate-y-1
                       <p className="text-sm text-gray-600 mt-1">
                         {new Date(resume.createdAt).toLocaleDateString()}
                       </p>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteResume(resume.id);
-                        }}
-                        className="mt-2 text-sm text-red-600 hover:text-red-700 font-semibold"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex gap-4 mt-3">
+
+                        <button
+                          onClick={() => startEditing(resume)}
+                          className="text-blue-500 font-semibold"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => deleteResume(resume.id)}
+                          className="text-red-500 font-semibold"
+                        >
+                          Delete
+                        </button>
+
+                      </div>
                     </div>
                   ))
                 )}

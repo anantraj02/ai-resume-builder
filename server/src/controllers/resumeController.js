@@ -11,6 +11,7 @@ export const createResume = async (req, res) => {
       experience,
       education,
       projects,
+      atsScore,
     } = req.body;
 
     const resume = await prisma.resume.create({
@@ -21,6 +22,7 @@ export const createResume = async (req, res) => {
         experience,
         education,
         projects,
+        atsScore,
         userId: req.user.id,
       },
     });

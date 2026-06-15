@@ -8,14 +8,20 @@ export const generateResume = async (req, res) => {
   try {
     const { jobRole, skills } = req.body;
 
-   const prompt = `
+    const prompt = `
 Generate professional resume content.
 
 Job Role: ${jobRole}
 Skills: ${skills}
 
-Also analyze the generated resume and provide
-3 ATS improvement suggestions.
+Also:
+
+1. Analyze the resume.
+2. Give an ATS score out of 100.
+3. Give 3 ATS improvement suggestions.
+
+ATS score should be realistic and usually between 65 and 95.
+Do not always return 100.
 
 Return ONLY valid JSON:
 
@@ -23,6 +29,7 @@ Return ONLY valid JSON:
   "summary":"",
   "experience":"",
   "projects":"",
+  "atsScore":0,
   "atsSuggestions":[]
 }
 `;
@@ -46,29 +53,10 @@ Return ONLY valid JSON:
       .trim();
 
     const resumeData = JSON.parse(cleanedContent);
-    const skillList = skills
-  .split(",")
-  .map(skill => skill.trim().toLowerCase());
+   
+    resumeData.atsScore =
+  Number(resumeData.atsScore) || 75;
 
-const resumeText = `
-${resumeData.summary}
-${resumeData.experience}
-${resumeData.projects}
-`.toLowerCase();
-
-let matchedSkills = 0;
-
-skillList.forEach((skill) => {
-  if (resumeText.includes(skill)) {
-    matchedSkills++;
-  }
-});
-
-const atsScore = Math.round(
-  (matchedSkills / skillList.length) * 100
-);
-
-resumeData.atsScore = atsScore;
     res.status(200).json(resumeData);
 
   } catch (error) {

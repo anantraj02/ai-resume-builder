@@ -110,7 +110,7 @@ lib/
 ## API Integration
 
 The frontend communicates with the backend API at:
-`https://ai-resume-builder-w42o.onrender.com/api`
+`http://localhost:5000/api`
 
 ### Endpoints Used
 - `POST /auth/signup` - User registration

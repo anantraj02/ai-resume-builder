@@ -1,6 +1,6 @@
 // API configuration
 export const API_BASE_URL =
-  "https://ai-resume-builder-w42o.onrender.com/api";
+  "http://localhost:5000/api";
 
 export const API_ENDPOINTS = {
   // Auth
