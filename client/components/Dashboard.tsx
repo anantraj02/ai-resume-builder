@@ -1,11 +1,14 @@
 "use client";
 import jsPDF from "jspdf";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Card from "./ui/Card";
 import Button from "./ui/Button";
 import Input from "./ui/Input";
+import { API_URL } from "@/lib/api";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [jobRole, setJobRole] = useState("");
   const [skills, setSkills] = useState("");
   const [message, setMessage] = useState("");
@@ -24,6 +27,16 @@ export default function Dashboard() {
   const [template, setTemplate] = useState("classic");
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
+  const [fullName, setFullName] = useState("");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -36,7 +49,7 @@ export default function Dashboard() {
   const fetchResumes = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/resume/my-resumes",
+        `${API_URL}/api/resume/my-resumes`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -88,7 +101,7 @@ export default function Dashboard() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/ai/generate-resume",
+        `${API_URL}/api/ai/generate-resume`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -119,7 +132,7 @@ export default function Dashboard() {
 
   const startEditing = (resume: any) => {
     setEditingId(resume.id);
-
+    setFullName(resume.fullName);
     setJobRole(resume.title);
     setSkills(resume.skills);
     setSummary(resume.summary);
@@ -143,7 +156,7 @@ export default function Dashboard() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/resume/create",
+        `${API_URL}/api/resume/create`,
         {
           method: "POST",
           headers: {
@@ -151,6 +164,7 @@ export default function Dashboard() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
+            fullName,
             title: jobRole,
             summary,
             skills,
@@ -158,7 +172,7 @@ export default function Dashboard() {
             education: "",
             projects,
             atsScore,
-          }),
+          })
         }
       );
 
@@ -171,8 +185,8 @@ export default function Dashboard() {
 
       setMessage("✅ Resume Saved Successfully!");
       setTimeout(() => {
-  setMessage("");
-}, 4000);
+        setMessage("");
+      }, 4000);
 
       setJobRole("");
       setSkills("");
@@ -189,7 +203,7 @@ export default function Dashboard() {
   const updateResume = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/resume/${editingId}`,
+        `${API_URL}/api/resume/${editingId}`,
         {
           method: "PUT",
           headers: {
@@ -216,8 +230,8 @@ export default function Dashboard() {
 
       setMessage("✅ Resume Updated Successfully!");
       setTimeout(() => {
-  setMessage("");
-}, 4000);
+        setMessage("");
+      }, 4000);
 
       setIsEditing(false);
       setEditingId("");
@@ -234,25 +248,28 @@ export default function Dashboard() {
     if (template === "classic") {
       doc.setFontSize(24);
       doc.setFont("helvetica", "bold");
-      doc.text(jobRole || "Professional Resume", 20, 20);
+      doc.text(fullName || "Your Name", 20, 20);
+
+      doc.setFontSize(16);
+      doc.text(jobRole || "Professional Resume", 20, 30);
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
-      doc.text(`ATS Score: ${atsScore}%`, 20, 30);
+      doc.text(`ATS Score: ${atsScore}%`, 20, 40);
 
-      doc.line(20, 35, 190, 35);
+      doc.line(20, 45, 190, 45);
 
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
-      doc.text("SUMMARY", 20, 50);
+      doc.text("SUMMARY", 20, 60);
 
       doc.setFontSize(11);
       doc.setFont("helvetica", "normal");
 
       const summaryLines = doc.splitTextToSize(summary || "", 170);
-      doc.text(summaryLines, 20, 60);
+      doc.text(summaryLines, 20, 70);
 
-      let y = 60 + summaryLines.length * 6 + 10;
+      let y = 70 + summaryLines.length * 6 + 10;
 
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
@@ -289,15 +306,154 @@ export default function Dashboard() {
       doc.text(projectLines, 20, y);
     }
 
-    doc.save(`${jobRole}-resume.pdf`);
+    if (template === "modern") {
+      doc.setFontSize(28);
+      doc.setTextColor(0, 102, 204);
+
+      doc.text(fullName || "Your Name", 20, 20);
+
+      doc.setFontSize(14);
+      doc.text(jobRole || "Professional Resume", 20, 32);
+
+      doc.setFontSize(12);
+      doc.setTextColor(100);
+
+      doc.text(`ATS Score: ${atsScore}%`, 20, 42);
+
+      doc.setDrawColor(0, 102, 204);
+      doc.line(20, 48, 190, 48);
+
+      let y = 65;
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 102, 204);
+      doc.text("Professional Summary", 20, y);
+
+      y += 10;
+
+      doc.setFontSize(11);
+      doc.setTextColor(0);
+
+      const summaryLines = doc.splitTextToSize(summary || "", 170);
+      doc.text(summaryLines, 20, y);
+
+      y += summaryLines.length * 6 + 10;
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 102, 204);
+      doc.text("Experience", 20, y);
+
+      y += 10;
+
+      doc.setFontSize(11);
+      doc.setTextColor(0);
+
+      const experienceLines = doc.splitTextToSize(
+        experience || "",
+        170
+      );
+
+      doc.text(experienceLines, 20, y);
+
+      y += experienceLines.length * 6 + 10;
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 102, 204);
+      doc.text("Projects", 20, y);
+
+      y += 10;
+
+      const projectLines = doc.splitTextToSize(
+        projects || "",
+        170
+      );
+
+      doc.text(projectLines, 20, y);
+    }
+
+    if (template === "ats") {
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+
+      doc.setFontSize(24);
+      doc.text(fullName || "Your Name", 20, 20);
+
+      doc.setFontSize(14);
+      doc.text(jobRole || "Professional Resume", 20, 32);
+
+      doc.setFontSize(11);
+      doc.text(`ATS Score: ${atsScore}%`, 20, 42);
+
+      let y = 60;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("SUMMARY", 20, y);
+
+      y += 8;
+
+      doc.setFont("helvetica", "normal");
+
+      const summaryLines = doc.splitTextToSize(
+        summary || "",
+        170
+      );
+
+      doc.text(summaryLines, 20, y);
+
+      y += summaryLines.length * 6 + 10;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("SKILLS", 20, y);
+
+      y += 8;
+
+      doc.setFont("helvetica", "normal");
+      doc.text(skills || "", 20, y);
+
+      y += 12;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("EXPERIENCE", 20, y);
+
+      y += 8;
+
+      doc.setFont("helvetica", "normal");
+
+      const experienceLines = doc.splitTextToSize(
+        experience || "",
+        170
+      );
+
+      doc.text(experienceLines, 20, y);
+
+      y += experienceLines.length * 6 + 10;
+
+      doc.setFont("helvetica", "bold");
+      doc.text("PROJECTS", 20, y);
+
+      y += 8;
+
+      doc.setFont("helvetica", "normal");
+
+      const projectLines = doc.splitTextToSize(
+        projects || "",
+        170
+      );
+
+      doc.text(projectLines, 20, y);
+    }
+
+    doc.save(`${jobRole}-${template}-resume.pdf`);
+
+
   };
 
   const deleteResume = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resume?")) return;
+
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/resume/${id}`,
+        `${API_URL}/api/resume/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -311,7 +467,10 @@ export default function Dashboard() {
         return;
       }
 
-      alert("Resume deleted successfully!");
+      setMessage("🗑️ Resume deleted successfully!");
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
       fetchResumes();
       setSelectedResume(null);
     } catch (error) {
@@ -404,7 +563,7 @@ export default function Dashboard() {
           {/* Left Panel - Generator */}
           <div className="lg:col-span-2 space-y-6">
 
-            
+
 
             {/* Input Card */}
             <Card >
@@ -412,6 +571,13 @@ export default function Dashboard() {
                 Generate Resume
               </h2>
               <div className="space-y-4">
+
+                <Input
+                  label="Full Name"
+                  placeholder="e.g., Rahul Sharma"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
                 <Input
                   label="Job Role"
                   placeholder="e.g., Senior Software Engineer"
@@ -543,43 +709,181 @@ export default function Dashboard() {
                 {/* Sections */}
                 <div className="space-y-6 mb-6">
                   <div>
-                    <div className="border rounded-xl p-8 bg-white shadow-sm mb-8">
+                    {template === "classic" && (
+                      <div className="
+border
+rounded-xl
+p-8
+bg-white
+shadow-lg
+hover:shadow-xl
+transition-all
+duration-300
+mb-8
+">
 
-                      <h1 className="text-3xl font-bold text-center mb-2">
-                        {jobRole || "Professional Resume"}
-                      </h1>
+                        <h1 className="text-3xl font-bold text-center mb-2">
+                          {fullName || "Your Name"}
+                        </h1>
 
-                      <p className="text-center text-gray-500 mb-6">
-                        ATS Score: {atsScore}%
-                      </p>
+                        <p className="text-center text-xl mb-4">
+                          {jobRole}
+                        </p>
 
-                      <hr className="mb-6" />
+                        <p className="text-center text-gray-500 mb-6">
+                          ATS Score: {atsScore}%
+                        </p>
 
-                      <h2 className="font-bold text-lg mb-2">
-                        SUMMARY
-                      </h2>
+                        <p className="text-center text-gray-400 text-sm mb-6">
+                          Generated by ResumeForge AI
+                        </p>
 
-                      <p className="mb-6">
-                        {summary}
-                      </p>
+                        <hr className="mb-6" />
 
-                      <h2 className="font-bold text-lg mb-2">
-                        EXPERIENCE
-                      </h2>
+                        <h2 className="font-bold text-lg mb-2">
+                          SUMMARY
+                        </h2>
 
-                      <p className="mb-6 whitespace-pre-wrap">
-                        {experience}
-                      </p>
+                        <p className="mb-6">
+                          {summary}
+                        </p>
 
-                      <h2 className="font-bold text-lg mb-2">
-                        PROJECTS
-                      </h2>
+                        <h2 className="font-bold text-lg mb-2">
+                          EXPERIENCE
+                        </h2>
 
-                      <p className="whitespace-pre-wrap">
-                        {projects}
-                      </p>
+                        <p className="mb-6 whitespace-pre-wrap">
+                          {experience}
+                        </p>
 
-                    </div>
+                        <h2 className="font-bold text-lg mb-2">
+                          PROJECTS
+                        </h2>
+
+                        <p className="whitespace-pre-wrap">
+                          {projects}
+                        </p>
+
+                      </div>
+                    )}
+
+                    {template === "modern" && (
+                      <div className="rounded-xl overflow-hidden shadow-lg border mb-8">
+
+                        <div className="bg-blue-600 text-white p-6">
+
+                          <div className="mb-4">
+                            <h1 className="text-4xl font-bold">
+                              {fullName || "Your Name"}
+                            </h1>
+
+                            <h2 className="text-2xl mt-2">
+                              {jobRole}
+                            </h2>
+                          </div>
+                          <p className="mt-2">
+                            ATS Score: {atsScore}%
+                          </p>
+
+                          <p className="text-center text-gray-400 text-sm mb-6">
+                            Generated by ResumeForge AI
+                          </p>
+
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {skills.split(",").map((skill, index) => (
+                              <span
+                                key={index}
+                                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm"
+                              >
+                                {skill.trim()}
+                              </span>
+                            ))}
+                          </div>
+
+                        </div>
+
+                        <div className="p-8 bg-white">
+
+                          <h2 className="text-blue-600 font-bold text-xl mb-3">
+                            Summary
+                          </h2>
+
+                          <p className="mb-6">
+                            {summary}
+                          </p>
+
+                          <h2 className="text-blue-600 font-bold text-xl mb-3">
+                            Experience
+                          </h2>
+
+                          <p className="mb-6 whitespace-pre-wrap">
+                            {experience}
+                          </p>
+
+                          <h2 className="text-blue-600 font-bold text-xl mb-3">
+                            Projects
+                          </h2>
+
+                          <p className="whitespace-pre-wrap">
+                            {projects}
+                          </p>
+
+                        </div>
+
+                      </div>
+                    )}
+                    {template === "ats" && (
+                      <div className="border-2 border-black p-8 bg-white mb-8">
+                        <div className="mb-4">
+                          <h1 className="text-4xl font-bold">
+                            {fullName || "Your Name"}
+                          </h1>
+
+                          <h2 className="text-2xl mt-2">
+                            {jobRole}
+                          </h2>
+                        </div>
+
+                        <p className="mb-4">
+                          ATS Score: {atsScore}%
+                        </p>
+
+                        <p className="text-center text-gray-400 text-sm mb-6">
+                          Generated by ResumeForge AI
+                        </p>
+
+                        <div className="mb-6">
+                          <strong>SUMMARY</strong>
+                          <p className="mt-2">
+                            {summary}
+                          </p>
+
+                          <div className="mb-6">
+                            <strong>SKILLS</strong>
+
+                            <p className="mt-2">
+                              {skills}
+                            </p>
+                          </div>
+
+                        </div>
+
+                        <div className="mb-6">
+                          <strong>EXPERIENCE</strong>
+                          <p className="mt-2 whitespace-pre-wrap">
+                            {experience}
+                          </p>
+                        </div>
+
+                        <div>
+                          <strong>PROJECTS</strong>
+                          <p className="mt-2 whitespace-pre-wrap">
+                            {projects}
+                          </p>
+                        </div>
+
+                      </div>
+                    )}
 
                   </div>
                 </div>
@@ -605,8 +909,8 @@ export default function Dashboard() {
                 <div className="flex gap-4 flex-wrap">
                   {!isEditing && (
                     <Button
-  onClick={saveResume}
-  className="
+                      onClick={saveResume}
+                      className="
     bg-blue-600
     text-white
     hover:bg-blue-700
@@ -616,9 +920,9 @@ export default function Dashboard() {
     px-6
     py-3
   "
->
-   Save Resume
-</Button>
+                    >
+                      Save Resume
+                    </Button>
                   )}
                   <Button
                     onClick={downloadPDF}
@@ -673,7 +977,13 @@ export default function Dashboard() {
                         : "border-gray-200 hover:border-gray-300"
                         }`}
                     >
-                      <h3 className="font-semibold text-navy">{resume.title}</h3>
+                      <h3 className="font-semibold text-navy">
+                        {resume.fullName || "Unknown User"}
+                      </h3>
+
+                      <p className="text-gray-600">
+                        {resume.title}
+                      </p>
                       <p className="text-sm text-gray-600 mt-1">
                         {new Date(resume.createdAt).toLocaleDateString()}
                       </p>
@@ -687,7 +997,10 @@ export default function Dashboard() {
                         </button>
 
                         <button
-                          onClick={() => deleteResume(resume.id)}
+                          onClick={() => {
+                            setResumeToDelete(resume.id);
+                            setShowDeleteModal(true);
+                          }}
                           className="text-red-500 font-semibold"
                         >
                           Delete
@@ -702,6 +1015,60 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-xl p-6 w-[400px] shadow-xl">
+
+            <h2 className="text-xl font-bold mb-3">
+              Delete Resume
+            </h2>
+
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this resume?
+              This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-3">
+
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setResumeToDelete(null);
+                }}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  if (resumeToDelete) {
+                    deleteResume(resumeToDelete);
+                  }
+
+                  setShowDeleteModal(false);
+                }}
+                className="
+            px-4
+            py-2
+            bg-red-600
+            text-white
+            rounded-lg
+            hover:bg-red-700
+          "
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
     </div>
+
+
   );
 }

@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 export const createResume = async (req, res) => {
   try {
     const {
+      fullName,
       title,
       summary,
       skills,
@@ -16,6 +17,7 @@ export const createResume = async (req, res) => {
 
     const resume = await prisma.resume.create({
       data: {
+         fullName,
         title,
         summary,
         skills,

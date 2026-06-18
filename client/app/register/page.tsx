@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { APP_NAME } from "@/lib/constants";
+import { useRouter } from "next/navigation";
+import { API_URL } from "@/lib/api";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -14,7 +16,14 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+   useEffect(() => {
+  const token = localStorage.getItem("token");
 
+  if (token) {
+    router.push("/dashboard");
+  }
+}, [router]);
   const registerUser = async () => {
     setError("");
 
@@ -37,7 +46,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/signup",
+        `${API_URL}/api/auth/signup`,
         {
           method: "POST",
           headers: {
@@ -58,8 +67,7 @@ export default function RegisterPage() {
         return;
       }
 
-      localStorage.setItem("token", data.token);
-      window.location.href = "/";
+      router.push("/login");
     } catch (error) {
       setError("An error occurred. Please try again.");
       console.log(error);

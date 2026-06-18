@@ -4,20 +4,31 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/constants";
 import Button from "./ui/Button";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+const pathname = usePathname();
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const [mounted, setMounted] = useState(false);
+
+const isAuthPage =
+  pathname === "/login" ||
+  pathname === "/register";
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
+  const token = localStorage.getItem("token");
 
+  setIsLoggedIn(!!token);
+  setMounted(true);
+}, []);
+  if (isAuthPage) {
+  return null;
+}
 
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-
+if (!mounted) {
+  return null;
+}
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -56,7 +67,7 @@ export default function Navbar() {
             ) : (
               <>
                 <Link
-                  href="/"
+                  href="/dashboard"
                   className="
   text-blue-600
   font-medium
@@ -64,21 +75,21 @@ export default function Navbar() {
   transition-colors
   "
                 >
-                  Home
+                  Dashboard
                 </Link>
 
                 <button
-  onClick={handleLogout}
-  className="
+                  onClick={handleLogout}
+                  className="
     text-red-600
     font-medium
     hover:text-red-700
     transition-colors
     duration-300
   "
->
-  Logout
-</button>
+                >
+                  Logout
+                </button>
               </>
             )}
 
